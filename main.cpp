@@ -19,6 +19,7 @@ int	main(int argc, char **argv)
 		std::cout
 			<< " Configuration file isn't provided." << std::endl
 			<< " Loading default settings ..." << std::endl;
+		Webserv	webserv;
 	}
 	else if (argc == 2)
 	{
@@ -26,6 +27,7 @@ int	main(int argc, char **argv)
 			<< " Configuration file is provided." << std::endl
 			<< " TODO: Read/Check config-file" << std::endl
 			<< " TODO: Start server with specified configuration" << std::endl;
+		Webserv	webserv(10, 12345);
 	}
 	else
 	{

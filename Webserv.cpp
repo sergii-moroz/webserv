@@ -32,7 +32,7 @@ Webserv::Webserv(Webserv const & copy)
 
 Webserv::~Webserv()
 {
-	std::cout << "Webbserv: Destructor called" << std::endl;
+	std::cout << "Webserv: Destructor called" << std::endl;
 }
 
 // ==========================================
