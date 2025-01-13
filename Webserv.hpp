@@ -31,6 +31,7 @@ class Webserv
 		static void	usage(void);
 	private:
 		void	initSocket(void);
+		void	bindSocket(void);
 		void	setup(void);
 		void	init(void);
 

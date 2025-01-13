@@ -34,6 +34,7 @@ Webserv::Webserv(Webserv const & copy)
 Webserv::~Webserv()
 {
 	std::cout << "Webserv: Destructor called" << std::endl;
+	close(_master_sd);
 }
 
 // ==========================================
@@ -65,13 +66,13 @@ void	Webserv::setup(void)
 	_master_sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_master_sd < 0)
 	{
-		std::cout << "ERROR: Failed to create socket";
+		std::cerr << "ERROR: Failed to create socket" << std::endl;
 		// exit(1); // ???
 	}
 
-	std::cout << "socket id: " << _master_sd
-		<< ", _port: " << _port
-		<< ", backlogs: " << _backlogs << std::endl;
+	std::cout	<< "socket id: " << _master_sd
+				<< ", _port: " << _port
+				<< ", backlogs: " << _backlogs << std::endl;
 
 	memset(&_serveraddr, 0, sizeof(_serveraddr));
 	_serveraddr.sin_addr.s_addr = INADDR_ANY;
@@ -86,8 +87,21 @@ void	Webserv::initSocket(void)
 	rc = setsockopt(_master_sd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 	{
-		std::cout << "ERROR: setsockopt(SO_REUSEADDR) is failed" << std::endl;
-		// exit(1); // ???
+		std::cerr << "ERROR: setsockopt(SO_REUSEADDR) is failed" << std::endl;
+		exit(1);
+	}
+}
+
+void	Webserv::bindSocket(void)
+{
+	int	rc;
+
+	rc = bind(_master_sd, (struct sockaddr *)&_serveraddr, sizeof(_serveraddr));
+	if (rc < 0)
+	{
+		close(_master_sd);
+		std::cerr << "bind() is failed" << std::endl;
+		exit(1);
 	}
 }
 
@@ -95,4 +109,5 @@ void	Webserv::init(void)
 {
 	setup();
 	initSocket();
+	bindSocket();
 }
