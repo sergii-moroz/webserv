@@ -13,7 +13,13 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
+# include <sys/socket.h>
+# include <netinet/in.h>
+# include <unistd.h>
 # include <iostream>
+
+# define PORT		12345
+# define BACKLOGS	10
 
 class Webserv
 {
@@ -24,7 +30,14 @@ class Webserv
 		Webserv &	operator=(Webserv const &);
 		static void	usage(void);
 	private:
+		void	initSocket(void);
+		void	setup(void);
+		void	init(void);
 
+		int			_port;
+		int			_backlogs;
+		int			_master_sd;
+		sockaddr_in	_serveraddr;
 };
 
 #endif
