@@ -17,6 +17,7 @@
 # include <netinet/in.h>
 # include <unistd.h>
 # include <iostream>
+# include <arpa/inet.h>
 
 # define PORT		12345
 # define BACKLOGS	10
@@ -37,10 +38,10 @@ class Webserv
 		void	setup(void);
 		void	init(void);
 
-		int			_port;
-		int			_backlogs;
-		int			_master_sd;
-		sockaddr_in	_serveraddr;
+		int				_port;
+		int				_backlogs;
+		int				_master_sd;
+		sockaddr_in6	_serveraddr;
 };
 
 #endif

@@ -63,7 +63,7 @@ void	Webserv::usage(void)
 void	Webserv::setup(void)
 {
 	std::cout << "INFO: creating a socket..." << std::endl;
-	_master_sd = socket(AF_INET, SOCK_STREAM, 0);
+	_master_sd = socket(AF_INET6, SOCK_STREAM, 0);
 	if (_master_sd < 0)
 		throw std::runtime_error("ERROR: Failed to create socket");
 
@@ -72,9 +72,10 @@ void	Webserv::setup(void)
 				<< ", backlogs: " << _backlogs << std::endl;
 
 	memset(&_serveraddr, 0, sizeof(_serveraddr));
-	_serveraddr.sin_addr.s_addr = INADDR_ANY;
-	_serveraddr.sin_port = htons(_port);
-	_serveraddr.sin_family = AF_INET;
+	_serveraddr.sin6_family = AF_INET6;
+	_serveraddr.sin6_port = htons(_port);
+	_serveraddr.sin6_addr = in6addr_any;
+	// _serveraddr.sin_addr.s_addr = INADDR_ANY;
 }
 
 void	Webserv::initSocket(void)
@@ -111,12 +112,22 @@ void	Webserv::acceptConnection(void)
 	int	sd = accept(_master_sd, NULL, NULL);
 	if (sd < 0)
 		throw std::runtime_error("ERROR: accept() is failed");
+	else
+	{
+		struct sockaddr_in6	clientaddr;
+		socklen_t	addrlen=sizeof(clientaddr);
+		char str[INET6_ADDRSTRLEN];
 
+		getpeername(sd, (struct sockaddr *)&clientaddr, &addrlen);
+		if (inet_ntop(AF_INET6, &clientaddr.sin6_addr, str, sizeof(str)))
+			std::cout << "INFO: Client: " << str << ":" << ntohs(clientaddr.sin6_port) << std::endl;
+	}
 	char	buffer[100];
 	memset(buffer, 0, sizeof(buffer));
 	int	size = read(sd, buffer, 100);
 	std::cout << "DEBUG: The message was recived: " << buffer << std::endl;
 	std::cout << "DEBUG: Message's size: " << size << std::endl;
+	close(sd);
 }
 
 void	Webserv::init(void)
