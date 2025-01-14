@@ -106,6 +106,19 @@ void	Webserv::listenSocket(void)
 	std::cout << "INFO: Ready for client connections ..." << std::endl;
 }
 
+void	Webserv::acceptConnection(void)
+{
+	int	sd = accept(_master_sd, NULL, NULL);
+	if (sd < 0)
+		throw std::runtime_error("ERROR: accept() is failed");
+
+	char	buffer[100];
+	memset(buffer, 0, sizeof(buffer));
+	int	size = read(sd, buffer, 100);
+	std::cout << "DEBUG: The message was recived: " << buffer << std::endl;
+	std::cout << "DEBUG: Message's size: " << size << std::endl;
+}
+
 void	Webserv::init(void)
 {
 	try
@@ -114,6 +127,7 @@ void	Webserv::init(void)
 		initSocket();
 		bindSocket();
 		listenSocket();
+		acceptConnection();
 	}
 	catch (std::exception const & e)
 	{
