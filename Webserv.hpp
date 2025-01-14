@@ -30,6 +30,7 @@ class Webserv
 		Webserv &	operator=(Webserv const &);
 		static void	usage(void);
 	private:
+		void	listenSocket(void);
 		void	initSocket(void);
 		void	bindSocket(void);
 		void	setup(void);

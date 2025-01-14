@@ -65,10 +65,7 @@ void	Webserv::setup(void)
 	std::cout << "INFO: creating a socket..." << std::endl;
 	_master_sd = socket(AF_INET, SOCK_STREAM, 0);
 	if (_master_sd < 0)
-	{
-		std::cerr << "ERROR: Failed to create socket" << std::endl;
-		// exit(1); // ???
-	}
+		throw std::runtime_error("ERROR: Failed to create socket");
 
 	std::cout	<< "socket id: " << _master_sd
 				<< ", _port: " << _port
@@ -86,10 +83,7 @@ void	Webserv::initSocket(void)
 
 	rc = setsockopt(_master_sd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
-	{
-		std::cerr << "ERROR: setsockopt(SO_REUSEADDR) is failed" << std::endl;
-		exit(1);
-	}
+		throw std::runtime_error("ERROR: setsockopt(SO_REUSEADDR) is failed");
 }
 
 void	Webserv::bindSocket(void)
@@ -100,14 +94,29 @@ void	Webserv::bindSocket(void)
 	if (rc < 0)
 	{
 		close(_master_sd);
-		std::cerr << "bind() is failed" << std::endl;
-		exit(1);
+		throw std::runtime_error("ERROR: bind() is failed");
 	}
+}
+
+void	Webserv::listenSocket(void)
+{
+	if (listen(_master_sd, _backlogs) < 0)
+		throw std::runtime_error("ERROR: Failed to listen on socket");
+
+	std::cout << "INFO: Ready for client connections ..." << std::endl;
 }
 
 void	Webserv::init(void)
 {
-	setup();
-	initSocket();
-	bindSocket();
+	try
+	{
+		setup();
+		initSocket();
+		bindSocket();
+		listenSocket();
+	}
+	catch (std::exception const & e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
 }
