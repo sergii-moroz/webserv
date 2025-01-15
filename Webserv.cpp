@@ -180,8 +180,32 @@ int	Webserv::getReadySocket(void)
 
 void	Webserv::receiveData(int sd)
 {
-	(void)sd;
-	throw std::runtime_error("DEBUG: Exit");
+	int	rc;
+	char	buffer[250];
+
+	rc = recv(sd, buffer, sizeof(buffer), 0);
+	if (rc < 0)
+		throw std::runtime_error("ERROR: recv() failed");
+	else if (rc == 0)
+	{
+		std::cout << "INFO: Connection was closed by client. Socket " << sd << std::endl;
+		// TODO: replace with cleanup()
+		close(sd);
+		FD_CLR(sd, &_master_set);
+		if (sd == _max_sd)
+		{
+			while (FD_ISSET(_max_sd, &_master_set) == false)
+				_max_sd--;
+		}
+	}
+	else
+	{
+		std::cout << rc << " bytes received" << std::endl;
+		send(sd, "server: ", 8, 0);
+		rc = send(sd, buffer, rc, 0);
+		if (rc < 0)
+			throw std::runtime_error("ERROR: send() failed");
+	}
 }
 
 void	Webserv::run(void)
