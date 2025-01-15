@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "webserv.hpp"
+#include "Webserv.hpp"
 
 int	main(int argc, char **argv)
 {
@@ -20,6 +20,7 @@ int	main(int argc, char **argv)
 			<< " Configuration file isn't provided." << std::endl
 			<< " Loading default settings ..." << std::endl;
 		Webserv	webserv;
+		webserv.run();
 	}
 	else if (argc == 2)
 	{
@@ -27,7 +28,7 @@ int	main(int argc, char **argv)
 			<< " Configuration file is provided." << std::endl
 			<< " TODO: Read/Check config-file" << std::endl
 			<< " TODO: Start server with specified configuration" << std::endl;
-		Webserv	webserv(10, 12345);
+		// Webserv	webserv(10, 12345);
 	}
 	else
 	{

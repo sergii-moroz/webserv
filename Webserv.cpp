@@ -133,12 +133,12 @@ void	Webserv::acceptConnection(void)
 		if (inet_ntop(AF_INET6, &clientaddr.sin6_addr, str, sizeof(str)))
 			std::cout << "INFO: Client: " << str << ":" << ntohs(clientaddr.sin6_port) << std::endl;
 	}
-	char	buffer[100];
-	memset(buffer, 0, sizeof(buffer));
-	int	size = read(sd, buffer, 100);
-	std::cout << "DEBUG: The message was recived: " << buffer << std::endl;
-	std::cout << "DEBUG: Message's size: " << size << std::endl;
-	close(sd);
+	// char	buffer[100];
+	// memset(buffer, 0, sizeof(buffer));
+	// int	size = read(sd, buffer, 100);
+	// std::cout << "DEBUG: The message was recived: " << buffer << std::endl;
+	// std::cout << "DEBUG: Message's size: " << size << std::endl;
+	// close(sd);
 }
 
 void	Webserv::init(void)
@@ -149,10 +149,40 @@ void	Webserv::init(void)
 		initSocket();
 		bindSocket();
 		listenSocket();
-		acceptConnection();
+		// acceptConnection();
 	}
 	catch (std::exception const & e)
 	{
 		std::cerr << e.what() << std::endl;
+	}
+}
+
+int	Webserv::getReadySocket(void)
+{
+	int	rc;
+
+	memcpy(&_working_set, &_master_set, sizeof(_master_set));
+	std::cout << "Waiting on select()..." << std::endl;
+	rc = select(_max_sd + 1, &_working_set, NULL, NULL, &_timeout);
+
+	if (rc < 0)
+		throw std::runtime_error("ERROR: select() failed");
+
+	if (rc == 0)
+		throw std::runtime_error("select() timed out. End program.");
+
+	return (rc);
+}
+
+void	Webserv::run(void)
+{
+	int	rc;
+
+	while (true)
+	{
+		rc = getReadySocket();
+		std::cout << "DEBUG: " << rc << " sockets are ready to processign" << std::endl;
+		if (rc > 0)
+			break;
 	}
 }
