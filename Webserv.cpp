@@ -125,6 +125,10 @@ void	Webserv::acceptConnection(void)
 		throw std::runtime_error("ERROR: accept() is failed");
 	else
 	{
+		FD_SET(sd, &_master_set);
+		if (sd > _max_sd)
+			_max_sd = sd; // TODO: replace all of this with function updateMasterSet()
+
 		struct sockaddr_in6	clientaddr;
 		socklen_t	addrlen=sizeof(clientaddr);
 		char str[INET6_ADDRSTRLEN];
@@ -174,15 +178,37 @@ int	Webserv::getReadySocket(void)
 	return (rc);
 }
 
+void	Webserv::receiveData(int sd)
+{
+	(void)sd;
+	throw std::runtime_error("DEBUG: Exit");
+}
+
 void	Webserv::run(void)
 {
-	int	rc;
+	int	n;
 
 	while (true)
 	{
-		rc = getReadySocket();
-		std::cout << "DEBUG: " << rc << " sockets are ready to processign" << std::endl;
-		if (rc > 0)
-			break;
+		n = getReadySocket();
+		std::cout << "DEBUG: " << n << " sockets are ready to processign" << std::endl;
+
+		for (int sd=0; sd <= _max_sd && n > 0; ++sd)
+		{
+			if (FD_ISSET(sd, &_working_set))
+			{
+				n--;
+				if (sd == _master_sd)
+				{
+					std::cout << "INFO: Listening socket is readable" << std::endl;
+					acceptConnection();
+				}
+				else
+				{
+					std::cout << "INFO: Existing descriptor " << sd << " is readable" << std::endl;
+					receiveData(sd);
+				}
+			} // if FD_ISSET()
+		} // for
 	}
 }

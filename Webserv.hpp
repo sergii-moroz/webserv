@@ -43,6 +43,7 @@ class Webserv
 		void	bindSocket(void);
 		void	setup(void);
 		void	init(void);
+		void	receiveData(int sd);
 
 		int				_port;
 		int				_backlogs;
