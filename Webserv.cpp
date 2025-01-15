@@ -67,15 +67,22 @@ void	Webserv::setup(void)
 	if (_master_sd < 0)
 		throw std::runtime_error("ERROR: Failed to create socket");
 
-	std::cout	<< "socket id: " << _master_sd
-				<< ", _port: " << _port
-				<< ", backlogs: " << _backlogs << std::endl;
-
 	memset(&_serveraddr, 0, sizeof(_serveraddr));
 	_serveraddr.sin6_family = AF_INET6;
 	_serveraddr.sin6_port = htons(_port);
 	_serveraddr.sin6_addr = in6addr_any;
-	// _serveraddr.sin_addr.s_addr = INADDR_ANY;
+
+	FD_ZERO(&_master_set);
+	_max_sd = _master_sd;
+	FD_SET(_master_sd, &_master_set);
+
+	_timeout.tv_sec = 15;
+	_timeout.tv_usec = 0;
+
+	char	str[INET6_ADDRSTRLEN];
+
+	if (inet_ntop(AF_INET6, &_serveraddr.sin6_addr, str, sizeof(str)))
+		std::cout << "INFO: Server " << str << ":" << _port << std::endl;
 }
 
 void	Webserv::initSocket(void)
@@ -85,6 +92,10 @@ void	Webserv::initSocket(void)
 	rc = setsockopt(_master_sd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
 	if (rc < 0)
 		throw std::runtime_error("ERROR: setsockopt(SO_REUSEADDR) is failed");
+
+	rc = fcntl(_master_sd, F_SETFL, O_NONBLOCK);
+	if (rc < 0)
+		throw std::runtime_error("ERROR: set socket to be nonblocking is failed. fcntl(O_NONBLOCK)");
 }
 
 void	Webserv::bindSocket(void)
