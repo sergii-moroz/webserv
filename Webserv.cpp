@@ -134,16 +134,10 @@ void	Webserv::acceptConnection(void)
 		socklen_t	addrlen=sizeof(clientaddr);
 		char str[INET6_ADDRSTRLEN];
 
-		getpeername(sd, (struct sockaddr *)&clientaddr, &addrlen);
+		getpeername(sd, (struct sockaddr *)&clientaddr, &addrlen); // <-- forbidden function???
 		if (inet_ntop(AF_INET6, &clientaddr.sin6_addr, str, sizeof(str)))
 			std::cout << "INFO: Client: " << str << ":" << ntohs(clientaddr.sin6_port) << std::endl;
 	}
-	// char	buffer[100];
-	// memset(buffer, 0, sizeof(buffer));
-	// int	size = read(sd, buffer, 100);
-	// std::cout << "DEBUG: The message was recived: " << buffer << std::endl;
-	// std::cout << "DEBUG: Message's size: " << size << std::endl;
-	// close(sd);
 }
 
 void	Webserv::init(void)
@@ -182,7 +176,7 @@ int	Webserv::getReadySocket(void)
 void	Webserv::receiveData(int sd)
 {
 	int	rc;
-	char	buffer[250];
+	char	buffer[512];
 
 	std::cout << "INFO: Existing descriptor " << sd << " is readable" << std::endl;
 	rc = recv(sd, buffer, sizeof(buffer), 0);
@@ -203,13 +197,31 @@ void	Webserv::receiveData(int sd)
 	else
 	{
 		std::cout << rc << " bytes received" << std::endl;
-		send(sd, "server: ", 8, 0);
-		rc = send(sd, buffer, rc, 0);
+		std::cout << buffer << std::endl;
+		// send(sd, "server: ", 8, 0);
+		// rc = send(sd, buffer, rc, 0);
+		std::string	msg = simpleResponse();
+		rc = send(sd, msg.c_str(), msg.size(), 0);
 		if (rc < 0)
 			throw std::runtime_error("ERROR: send() failed");
 	}
 }
 
+std::string	Webserv::simpleResponse(void)
+{
+	std::string res;
+	res = "HTTP/1.1 200 OK\r\nContent-Length: 14\r\nContent-Type: text/html\r\n\r\nHello World!\r\n";
+	std::srand(clock());
+	int r = rand();
+	if (r % 2 == 0)
+		res = "HTTP/1.1 200 OK\r\nContent-Length: 21\r\nContent-Type: text/html\r\n\r\nHello Heilbronn 42!\r\n";
+	if (r % 3 == 0)
+		res = "HTTP/1.1 200 OK\r\nContent-Length: 15\r\nContent-Type: text/html\r\n\r\nHello smoroz!\r\n";
+	if (r % 5 == 0)
+		res = "HTTP/1.1 200 OK\r\nContent-Length: 17\r\nContent-Type: text/html\r\n\r\nHello olanokhi!\r\n";
+
+	return (res);
+}
 
 /*
 | Runs the web server, continuously processing incoming connections and data.

@@ -19,6 +19,7 @@
 # include <sys/time.h>
 # include <arpa/inet.h>
 # include <unistd.h>
+# include <stdlib.h>
 # include <iostream>
 # include <fcntl.h>
 
@@ -44,6 +45,7 @@ class Webserv
 		void	setup(void);
 		void	init(void);
 		void	receiveData(int sd);
+		std::string	simpleResponse(void);
 
 		int				_port;
 		int				_backlogs;
