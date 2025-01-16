@@ -120,6 +120,7 @@ void	Webserv::listenSocket(void)
 
 void	Webserv::acceptConnection(void)
 {
+	std::cout << "INFO: Listening socket is readable" << std::endl;
 	int	sd = accept(_master_sd, NULL, NULL);
 	if (sd < 0)
 		throw std::runtime_error("ERROR: accept() is failed");
@@ -183,6 +184,7 @@ void	Webserv::receiveData(int sd)
 	int	rc;
 	char	buffer[250];
 
+	std::cout << "INFO: Existing descriptor " << sd << " is readable" << std::endl;
 	rc = recv(sd, buffer, sizeof(buffer), 0);
 	if (rc < 0)
 		throw std::runtime_error("ERROR: recv() failed");
@@ -208,31 +210,42 @@ void	Webserv::receiveData(int sd)
 	}
 }
 
+
+/*
+| Runs the web server, continuously processing incoming connections and data.
+|
+| This function enters an infinite loop where it constantly checks for ready sockets,
+| accepts new connections on the master socket, and receives data from all available
+| sockets in the working set.
+| It reads only `n` ready sockets and decrement the socket readiness count
+| until there are no more ready sockets.
+*/
 void	Webserv::run(void)
 {
 	int	n;
 
 	while (true)
 	{
-		n = getReadySocket();
-		std::cout << "DEBUG: " << n << " sockets are ready to processign" << std::endl;
-
-		for (int sd=0; sd <= _max_sd && n > 0; ++sd)
+		try
 		{
-			if (FD_ISSET(sd, &_working_set))
+			n = getReadySocket();
+			std::cout << "DEBUG: " << n << " sockets are ready to processign" << std::endl;
+
+			for (int sd=0; sd <= _max_sd && n > 0; ++sd)
 			{
-				n--;
-				if (sd == _master_sd)
+				if (FD_ISSET(sd, &_working_set))
 				{
-					std::cout << "INFO: Listening socket is readable" << std::endl;
-					acceptConnection();
+					n--;
+					if (sd == _master_sd)
+						acceptConnection();
+					else
+						receiveData(sd);
 				}
-				else
-				{
-					std::cout << "INFO: Existing descriptor " << sd << " is readable" << std::endl;
-					receiveData(sd);
-				}
-			} // if FD_ISSET()
-		} // for
+			}
+		}
+		catch (std::exception const & e)
+		{
+			std::cout << e.what() << std::endl;
+		}
 	}
 }
